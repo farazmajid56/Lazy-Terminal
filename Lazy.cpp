@@ -1,6 +1,3 @@
-// Assignment 2 
-// Faraz Majid 
-// 20L-1162
 #include<iostream>
 using namespace std;
 #include<unistd.h>
@@ -20,6 +17,7 @@ int oldpipe[2];
 int newpipe[2];
 int file;
 
+// Utility Function
 void CallCommand(vector<char*> &args);
 
 void CMD(bool &flag){
@@ -130,16 +128,18 @@ void CallCommand(vector<char*> &args){
     if(pid == 0){
         args.push_back(NULL);
         if(close(newpipe[0]) == -1){
-            dprintf(std_write,"\033[4;1;31mError in Close\033[0m\n");
+            //dprintf(std_write,"\033[4;1;31mError in Close\033[0m\n");
         }
         char** command = &args[0];
         if(execvp(command[0],command) == -1){
-            dprintf(std_write,"\033[4;1;31mError in Exec\033[0m\n");
+            dprintf(std_write,"\033[4;1;31mError in Exec \nInvalid Command\033[0m\n");
         }
     }
     else if(pid > 0){
-        if(close(newpipe[1]) == -1){
-            dprintf(std_write,"\033[4;1;31mError in Close\033[0m\n");
+        if(newpipe[1] != std_write){
+            if(close(newpipe[1]) == -1){
+                //dprintf(std_write,"\033[4;1;31mError in Close\033[0m\n");
+            }
         }
         if(wait(NULL) == -1){
             dprintf(std_write,"\033[4;1;31mError in Wait\033[0m\n"); 
@@ -154,8 +154,9 @@ void CallCommand(vector<char*> &args){
 int main(){
     cout << "\033[1;4;33m\t\tWelcome to Lazy Terminal\033[0m\n";
     bool flag = false;
-    do{ 
-        reset_std();
+    do{
+        dup2(std_read, 0);
+        dup2(std_write, 1);
         CMD(flag);
         if(flag){
             break;
